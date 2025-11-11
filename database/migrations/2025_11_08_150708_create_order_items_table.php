@@ -9,19 +9,32 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::create('order_items', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
-    }
+public function up(): void
+{
+    Schema::create('order_items', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('order_id')->constrained()->cascadeOnDelete();
+        $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+
+        $table->unsignedBigInteger('unit_price'); // from product, kept in minor units
+        $table->unsignedInteger('quantity');
+        $table->unsignedBigInteger('subtotal'); // unit_price * quantity
+
+        $table->timestamps();
+
+        $table->index('order_id');
+        $table->index('product_id');
+    });
+}
+
+
+
 
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
-        Schema::dropIfExists('order_items');
-    }
+   public function down(): void
+{
+    Schema::dropIfExists('order_items');
+}
 };
