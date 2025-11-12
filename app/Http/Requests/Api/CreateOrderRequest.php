@@ -11,7 +11,10 @@ class CreateOrderRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
+         // un comment below line  on  production so the curently logged in user id can be checked. 
+        //return $this->user()->id === $this->input('user_id');
+       
     }
 
     /**
@@ -21,8 +24,11 @@ class CreateOrderRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            //
-        ];
+         return [
+            'user_id' => 'required|integer|exists:users,id',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|integer|exists:products,id',
+            'items.*.quantity' => 'required|integer|min:1',
+            ];
     }
 }

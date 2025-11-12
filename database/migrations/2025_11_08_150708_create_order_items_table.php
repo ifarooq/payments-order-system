@@ -18,7 +18,7 @@ public function up(): void
 
         $table->unsignedBigInteger('unit_price'); // from product, kept in minor units
         $table->unsignedInteger('quantity');
-        $table->unsignedBigInteger('subtotal'); // unit_price * quantity
+        $table->unsignedBigInteger('line_total'); // unit_price * quantity
 
         $table->timestamps();
 

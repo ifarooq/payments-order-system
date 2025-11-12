@@ -22,7 +22,7 @@ return new class extends Migration
             'cancelled'
         ])->default('pending');
 
-        $table->unsignedBigInteger('amount'); // total in minor units
+        $table->unsignedBigInteger('total'); // total in minor units
         $table->char('currency', 3)->default('MYR');
 
         $table->timestamps();

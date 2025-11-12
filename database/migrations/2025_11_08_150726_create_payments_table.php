@@ -24,11 +24,11 @@ public function up(): void
 
         $table->unsignedBigInteger('amount'); // minor units
         $table->char('currency', 3)->default('MYR');
-
+  $table->uuid('reference')->unique(); // <-- Add this line
         $table->timestamp('authorized_at')->nullable();
         $table->timestamp('captured_at')->nullable();
         $table->timestamp('voided_at')->nullable();
-
+      
         $table->timestamps();
 
         $table->unique('order_id'); // one active payment per order
