@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: payments_app
+    restart: unless-stopped
+    environment:
+      APP_ENV: local
+      APP_KEY: ${APP_KEY}
+      APP_DEBUG: true
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: payments
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      REDIS_HOST: redis
+    ports:
+      - "8000:9000"
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./:/var/www/html
+
+  mysql:
+    image: mysql:8.0
+    container_name: payments_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: payments
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  redis:
+    image: redis:7-alpine
+    container_name: payments_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+volumes:
+  mysql_data:

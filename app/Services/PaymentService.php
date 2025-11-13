@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Log;
 class PaymentService
 {
     public function __construct(
@@ -24,7 +25,7 @@ class PaymentService
      */
 public function authorizePayment(array $data, string $idempotencyKey)
 {
-    logger()->info('AuthorizePayment called', [
+   Log::info('AuthorizePayment called', [
         'idempotencyKey' => $idempotencyKey,
         'data' => $data,
     ]);
@@ -39,7 +40,7 @@ public function authorizePayment(array $data, string $idempotencyKey)
         $cacheKey = "idempotency:{$idempotencyKey}";
 
         if ($existing = Redis::get($cacheKey)) {
-            logger()->info('Returning cached payment', ['key' => $cacheKey]);
+            Log::info('Returning cached payment', ['key' => $cacheKey]);
             return json_decode($existing, true);
         }
 
@@ -68,11 +69,11 @@ public function authorizePayment(array $data, string $idempotencyKey)
             ]);
 
             DB::commit();
-            logger()->info('Payment committed to DB', ['payment_id' => $payment->id]);
+            Log::info('Payment committed to DB', ['payment_id' => $payment->id]);
 
         } catch (\Throwable $e) {
             DB::rollBack();
-            logger()->error('DB transaction failed', ['error' => $e->getMessage()]);
+            Log::error('DB transaction failed', ['error' => $e->getMessage()]);
             throw $e;
         }
 
@@ -80,29 +81,29 @@ public function authorizePayment(array $data, string $idempotencyKey)
         try {
             Redis::setex($cacheKey, 86400, json_encode($payment->toArray()));
         } catch (\Throwable $e) {
-            logger()->error('Redis failed (non-blocking)', ['error' => $e->getMessage()]);
+            Log::error('Redis failed (non-blocking)', ['error' => $e->getMessage()]);
         }
 
         // --- Return the persisted payment record ---
         $payment = $this->paymentRepo->findById($payment->id);
-        logger()->info('Returning payment response', ['payment' => $payment->toArray()]);
+        Log::info('Returning payment response', ['payment' => $payment->toArray()]);
         return $payment;
 
     } catch (ValidationException $e) {
-        logger()->warning('Validation failed', ['errors' => $e->errors()]);
+        Log::warning('Validation failed', ['errors' => $e->errors()]);
         throw new HttpResponseException(response()->json([
             'message' => 'Validation failed',
             'errors' => $e->errors(),
         ], 422));
 
     } catch (ModelNotFoundException $e) {
-        logger()->warning('Order not found', ['error' => $e->getMessage()]);
+        Log::warning('Order not found', ['error' => $e->getMessage()]);
         throw new HttpResponseException(response()->json([
             'message' => 'Order not found or invalid ID.',
         ], 404));
 
     } catch (\Throwable $e) {
-        logger()->error('Payment authorization failed', ['error' => $e->getMessage()]);
+        Log::error('Payment authorization failed', ['error' => $e->getMessage()]);
         throw new HttpResponseException(response()->json([
             'message' => 'Payment authorization failed.',
             'error' => $e->getMessage(),
@@ -199,7 +200,7 @@ public function authorizePayment(array $data, string $idempotencyKey)
         ], 404));
 
     } catch (\Throwable $e) {
-        logger()->error('Payment void failed', [
+        Log::error('Payment void failed', [
             'payment_id' => $paymentId,
             'error' => $e->getMessage(),
         ]);

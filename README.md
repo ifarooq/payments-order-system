@@ -57,3 +57,17 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+# Docker Setup
+docker-compose build
+docker-compose up -d
+
+# Run migrations
+docker-compose exec app php artisan migrate --seed
+
+# Run queue worker
+docker-compose exec app php artisan queue:work
+
+#Postman Collection
+postman collection included in project root named "Payments Order System API.postman_collection.json"
+
